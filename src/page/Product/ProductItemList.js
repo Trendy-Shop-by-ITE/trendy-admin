@@ -29,7 +29,7 @@ for (let i = 0; i < 46; i++) {
 const ProductItemList = () => {
     return (
         <div>
-            <div className='mt-6'>
+            <div>
                 <h2 className='mb-4 text-3xl font-bold'>Product Item List</h2>
                 <div>
                     <Table columns={columns} dataSource={data1} />
