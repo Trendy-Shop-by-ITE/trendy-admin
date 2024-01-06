@@ -13,27 +13,59 @@ import AddCategory from './page/Category/AddCategory';
 import AddProduct from './page/Product/AddProduct';
 import AddProductItem from './page/Product/AddProductItem';
 import AddImage from './page/Image/AddImage';
+import { useDispatch, useSelector } from 'react-redux';
+import { useEffect } from 'react';
+import { setToken } from './redux/slice/auth/authSlice';
 
 function App() {
-  return (
-    <Router>
-      <Routes>
-        <Route path='/' element={<Login />} />
-        <Route path='/admin' element={<MainLayout />}>
-          <Route index element={<Dashboard />} />
-          <Route path='customer' element={<Customer />} />
-          <Route path='user-cart' element={<CartList />} />
-          <Route path='product-list' element={<ProductList />} />
-          <Route path='product-item-list' element={<ProductItemList />} />
-          <Route path='category-list' element={<CategoryList />} />
-          <Route path='order' element={<Order />} />
-          <Route path='category' element={<AddCategory />} />
-          <Route path='product' element={<AddProduct />} />
-          <Route path='product-item' element={<AddProductItem />} />
-          <Route path='image' element={<AddImage />} />
 
-        </Route>
-      </Routes>
+  const dispatch = useDispatch();
+  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
+
+  useEffect(() => {
+    // Check if the user is already authenticated (e.g., has a token)
+    const token = localStorage.getItem('token');
+    if (token) {
+      // If the user has a token, set it in the Redux state
+      dispatch(setToken(token));
+    }
+  }, [dispatch]);
+
+
+  return (
+
+    <Router>
+      {isAuthenticated &&
+        <MainLayout>
+          <Routes>
+            <Route path='/' element={<Dashboard />} />
+           
+              <Route path='customer' element={<Customer />} />
+              <Route path='user-cart' element={<CartList />} />
+              <Route path='product-list' element={<ProductList />} />
+              <Route path='product-item-list' element={<ProductItemList />} />
+              <Route path='category-list' element={<CategoryList />} />
+              <Route path='order' element={<Order />} />
+              <Route path='category' element={<AddCategory />} />
+              <Route path='product' element={<AddProduct />} />
+              <Route path='product-item' element={<AddProductItem />} />
+              <Route path='image' element={<AddImage />} />
+            {/* <Route path='/admin' element={<MainLayout />}>
+              
+
+            </Route> */}
+          </Routes>
+        </MainLayout>
+
+      }
+
+      {!isAuthenticated &&
+        <Routes>
+          <Route path='*' element={<Login />} />
+          <Route path='/login' element={<Login />} />
+        </Routes>
+      }
+
     </Router>
   );
 }

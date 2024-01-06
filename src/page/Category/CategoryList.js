@@ -1,41 +1,66 @@
-import React from 'react'
-import { Table } from 'antd';
-
-const columns = [
-    {
-        title: 'Name',
-        dataIndex: 'name',
-    },
-    {
-        title: 'Age',
-        dataIndex: 'age',
-    },
-    {
-        title: 'Address',
-        dataIndex: 'address',
-    },
-];
-const data1 = [];
-for (let i = 0; i < 46; i++) {
-    data1.push({
-        key: i,
-        name: `Edward King ${i}`,
-        age: 32,
-        address: `London, Park Lane no. ${i}`,
-    });
-}
+import React, { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { getTopLevelCategory } from '../../redux/slice/categorySlice';
+import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
+import 'react-tabs/style/react-tabs.css';
+import CategoryContent from './page/CategoryContent';
 
 const CategoryList = () => {
-    return (
-        <div>
-            <div className='mt-6'>
-                <h2 className='mb-4 text-3xl font-bold'>Category List</h2>
-                <div>
-                    <Table columns={columns} dataSource={data1} />
-                </div>
-            </div>
-        </div>
-    )
-}
+  const [isLoading, setIsLoading] = useState(false);
+  const data = useSelector((state) => state?.root?.category?.data);
+  const dispatch = useDispatch();
+  
+  const [selectedCategoryId, setSelectedCategoryId] = useState(null);
 
-export default CategoryList
+  const initData = async () => {
+    setIsLoading(true);
+    let response = {};
+    try {
+      response = await dispatch(getTopLevelCategory());
+
+      console.log(`response = ${response}`)
+
+      // Set the default selected category if available
+      if (response && response.length > 0) {
+        setSelectedCategoryId(response[0].id);
+      }
+    } catch (error) {
+      console.log(error);
+      response = error;
+    }
+    setIsLoading(false);
+    return response;
+  };
+
+  useEffect(() => {
+    initData();
+  }, []);
+
+
+  return (
+    <div className='bg bg- bg-white p-4 rounded-lg overflow-hidden'>
+
+    
+        <h2 className='mb-4 text-3xl font-bold'>Category</h2>
+      <Tabs>
+        <TabList>
+          {/* Render dynamic tabs for top-level categories */}
+          {data?.map((category) => (
+            <Tab key={category.id} selected={selectedCategoryId === category.id}>
+              {category.name}
+            </Tab>
+          ))}
+        </TabList>
+
+        {/* Render CategoryContent with the selected top-level category ID */}
+        {data?.map((category) => (
+          <TabPanel key={category.id}>
+            <CategoryContent id={category.id} key={category.id} />
+          </TabPanel>
+        ))}
+      </Tabs>
+    </div>
+  );
+};
+
+export default CategoryList;
