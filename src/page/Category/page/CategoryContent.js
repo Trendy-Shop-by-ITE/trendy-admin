@@ -7,13 +7,16 @@ const CategoryContent = (props) => {
   const name = props.name
 
   const [isLoading, setIsLoading] = useState(false)
-  const data = useSelector((state) => state?.subCategory?.data)
+  const data = useSelector((state) => state?.root?.subCategory?.data)
   const dispatch = useDispatch();
+
+  
   const initData = async () => {
     setIsLoading(true)
     let response = {}
     try {
       response = await dispatch(getSubCategoryLevel(id))
+      
     } catch (error) {
       console.log(error)
       response = error

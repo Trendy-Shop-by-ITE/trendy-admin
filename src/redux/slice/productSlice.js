@@ -1,6 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import axios from "axios";
-
+import api from "../../app/api";
 const initialState = {
     isLoading: false,
     error: false,
@@ -8,47 +7,130 @@ const initialState = {
         //post data
     },
     data: [],
+    errorData: [],
+    product: []
 }
 
 
 const productSlice = createSlice({
     name: 'product',
     initialState,
-    reducers:{
-        startLoading(state){
+    reducers: {
+        startLoading(state) {
             state.isLoading = true;
         },
-        stopLoading(state){
+        stopLoading(state) {
             state.isLoading = false;
         },
-        hasError(state, action){
+        hasError(state, action) {
             state.isLoading = false;
             action.filter = action.payload
         },
-        setFilterSuccess(state, action){
+        setFilterSuccess(state, action) {
             state.isLoading = false;
             state.filter = action.payload
         },
-        getProduct (state, actions){
+        getProduct(state, actions) {
             state.isLoading = false;
             state.data = actions.payload
+        },
+        deleteProductBID(state, actions) {
+            state.isLoading = false;
+            state.errorData = actions.payload
+        },
+        createProduct(state, actions) {
+            state.isLoading = false;
+            state.product = actions.payload
+        },
+        createItemProduct(state, actions) {
+            state.isLoading = false;
+            state.product = actions.payload
         }
     }
 })
 
-export const getProductLevel = () => async (dispatch) =>{
+export const createProductItem = (params) => async (dispatch) =>{
     dispatch(startLoading())
+
     try{
+        
+        const response = await api.post(`/product-variant`, params)
+        if (response) {
+            console.log('response = ', response)
+            return response
+        }
 
-        const response =  await axios.get(`http://52.221.209.156:5001/api/productsV2`)
+    }catch(error){
+        console.log(error)
 
-        if(response?.data){
-            dispatch(getProduct(response?.data))
+    }finally{
+        dispatch(stopLoading())
+    }
+}
+
+export const createProductMain = (params) => async (dispatch) => {
+    dispatch(startLoading())
+
+    try {
+        const response = await api.post(`/products`, params)
+
+        if (response) {
+            console.log('response = ', response)
+
+            return response
+        }
+
+    } catch (error) {
+
+        console.log(error)
+
+    } finally {
+        dispatch(stopLoading())
+    }
+}
+
+
+export const fetchProduct = async () => {
+    try {
+        const response = await api.get("/productsV2");
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+};
+
+export const deleteProductById = (id) => async (dispatch) => {
+    dispatch(startLoading())
+    try {
+        const response = await api.delete(`/products/${id}`)
+
+        if (response) {
+            console.log('response = ', response)
+
+            return response
+        }
+    } catch (error) {
+        console.log("error = ", error.response)
+        if (error?.response) {
+
+            return error.response
+        }
+    }
+    dispatch(stopLoading())
+}
+
+export const getProductLevel = () => async (dispatch) => {
+    dispatch(startLoading())
+    try {
+
+        const response = await fetchProduct()
+        if (response) {
+            dispatch(getProduct(response))
             return response
         }
 
 
-    }catch(error){
+    } catch (error) {
         console.log(error)
         return error
     }
@@ -60,7 +142,8 @@ export const {
     stopLoading,
     hasError,
     setFilterSuccess,
-    getProduct
+    getProduct,
+    deleteProductBID
 } = productSlice.actions
 
 export default productSlice.reducer

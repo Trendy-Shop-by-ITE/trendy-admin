@@ -1,7 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-
-// import { fetchCategories } from "./auth/authApi";
-import api from "../../app/api";
+import api from "../../../app/api";
 
 const initialState = {
     isLoading: false,
@@ -12,8 +10,8 @@ const initialState = {
     data: [],
 }
 
-const categorySlice = createSlice({
-    name: 'category',
+const customerSlice = createSlice({
+    name: 'customer',
     initialState,
     reducers: {
         startLoading(state) {
@@ -30,48 +28,48 @@ const categorySlice = createSlice({
             state.isLoading = false;
             state.filter = action.payload;
         },
-        getCategory(state, action) {
+        getCustomer(state, action) {
             state.isLoading = false;
             state.data = action.payload;
         }
         
     }
 })
-export const fetchCategories = async () => {
-    try {
-      const response = await api.get("/categories");
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
-  };
 
-export const getTopLevelCategory = () => async (dispatch) => {
+
+
+
+
+
+export const getCustomerList = () =>  async (dispatch) =>{
     dispatch(startLoading());
 
-    try {
-        const categoriesResponse = await fetchCategories();
-        console.log(`categoriesResponse:`, categoriesResponse);
+    try{
 
-        if (categoriesResponse) {
-            dispatch(getCategory(categoriesResponse));
-            return categoriesResponse;
+        const response = await api.get(`/user/get-all`)
+        if(response){
+            dispatch(getCustomer(response))
+            console.log(response)
+            return response
         }
 
-    } catch (error) {
-        console.error(error);
-        return error;
+    }catch(error){
+        console.log(error);
+        return error
     }
 
     dispatch(stopLoading());
-};
+}
+
+
+
+
 export const {
     startLoading,
     stopLoading,
     hasError,
     setFilterSuccess,
-    getCategory
+    getCustomer
+} = customerSlice.actions
 
-} = categorySlice.actions
-
-export default categorySlice.reducer;
+export default customerSlice.reducer

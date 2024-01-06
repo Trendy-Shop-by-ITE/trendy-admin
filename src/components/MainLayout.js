@@ -1,23 +1,66 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { AiOutlineDashboard, AiOutlineUser, AiOutlineShoppingCart } from 'react-icons/ai'
-import{BiCategory} from 'react-icons/bi'
-import {LiaSitemapSolid} from 'react-icons/lia'
-import {BsBagCheck, BsShop, BsCardImage} from 'react-icons/bs'
+import { BiCategory } from 'react-icons/bi'
+import { LiaSitemapSolid } from 'react-icons/lia'
+import { BsBagCheck, BsShop, BsCardImage } from 'react-icons/bs'
+import { CiLogout } from "react-icons/ci";
+import { setToken, clearToken } from '../redux/slice/auth/authSlice';
+import store from '../redux/store';
 import {
     MenuFoldOutlined,
     MenuUnfoldOutlined,
 } from '@ant-design/icons';
 import { Layout, Menu, Button, theme } from 'antd';
-import { Outlet, useNavigate } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
 const { Header, Sider, Content } = Layout;
 
-const MainLayout = () => {
+const MainLayout = ({children}) => {
+
     const [collapsed, setCollapsed] = useState(false);
     const {
         token: { colorBgContainer },
     } = theme.useToken();
 
+    const dispatch = useDispatch()
+
     const navigate = useNavigate()
+
+    const authState = useSelector((state) => state.auth);
+
+    useEffect(() => {
+        const handleBeforeUnload = () => {
+            // Save Redux state to sessionStorage
+            sessionStorage.setItem("reduxState", JSON.stringify(store.getState()));
+        };
+
+        window.addEventListener("beforeunload", handleBeforeUnload);
+
+        // Retrieve Redux state from sessionStorage on component mount
+        const storedReduxState = sessionStorage.getItem("reduxState");
+        if (storedReduxState) {
+            const parsedState = JSON.parse(storedReduxState);
+            dispatch(setToken(parsedState.auth.token));
+        }
+
+        return () => {
+            window.removeEventListener("beforeunload", handleBeforeUnload);
+        };
+    }, [dispatch]);
+    const handleLogout = () => {
+        dispatch(clearToken());
+        // You can also redirect the user to the login page or any other page after logout
+        navigate('/');
+      };
+
+    useEffect(() => {
+        console.log('Token in MainLayout:', authState.token);
+    }, [authState.token]);
+
+    if (!authState.isAuthenticated && !localStorage.getItem("token")) {
+        // Redirect to login if not authenticated and no token in localStorage
+        return <Navigate to="/" />;
+    }
 
     return (
         <Layout>
@@ -47,7 +90,7 @@ const MainLayout = () => {
                         },
                         {
                             key: 'customer',
-                            icon: <AiOutlineUser style={{ fontSize: '20px' }}/>,
+                            icon: <AiOutlineUser style={{ fontSize: '20px' }} />,
                             label: 'Customer',
                         },
                         {
@@ -89,18 +132,23 @@ const MainLayout = () => {
                         },
                         {
                             key: 'user-cart',
-                            icon: <BsBagCheck style={{ fontSize: '20px' }}/>,
+                            icon: <BsBagCheck style={{ fontSize: '20px' }} />,
                             label: 'User Cart',
                         },
                         {
                             key: 'order',
-                            icon: <BsShop style={{ fontSize: '20px' }}/>,
+                            icon: <BsShop style={{ fontSize: '20px' }} />,
                             label: 'Order',
                         },
                         {
                             key: 'image',
-                            icon: <BsCardImage style={{ fontSize: '20px' }}/>,
+                            icon: <BsCardImage style={{ fontSize: '20px' }} />,
                             label: 'Image',
+                        },
+                        {
+                            onClick: handleLogout, 
+                            icon: <CiLogout style={{ fontSize: '20px' }} />,
+                            label: 'Logout',
                         },
 
                     ]}
@@ -122,19 +170,21 @@ const MainLayout = () => {
                             width: 64,
                             height: 64,
                         }}
-                        
+
                     />
-                
+
                 </Header>
                 <Content
                     style={{
                         margin: '24px 16px',
-                    
+
                         minHeight: '100vh',
                         background: colorBgContainer,
                     }}
                 >
-                    <Outlet />
+                    {/* <Outlet /> */}
+
+                    {children}
                 </Content>
             </Layout>
         </Layout>

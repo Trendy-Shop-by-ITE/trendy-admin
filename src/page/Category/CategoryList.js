@@ -7,9 +7,9 @@ import CategoryContent from './page/CategoryContent';
 
 const CategoryList = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const data = useSelector((state) => state?.category?.data);
+  const data = useSelector((state) => state?.root?.category?.data);
   const dispatch = useDispatch();
-
+  
   const [selectedCategoryId, setSelectedCategoryId] = useState(null);
 
   const initData = async () => {
@@ -17,6 +17,9 @@ const CategoryList = () => {
     let response = {};
     try {
       response = await dispatch(getTopLevelCategory());
+
+      console.log(`response = ${response}`)
+
       // Set the default selected category if available
       if (response && response.length > 0) {
         setSelectedCategoryId(response[0].id);
@@ -33,9 +36,11 @@ const CategoryList = () => {
     initData();
   }, []);
 
+
   return (
     <div className='bg bg- bg-white p-4 rounded-lg overflow-hidden'>
 
+    
         <h2 className='mb-4 text-3xl font-bold'>Category</h2>
       <Tabs>
         <TabList>

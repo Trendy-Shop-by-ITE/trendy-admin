@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
-import axios from "axios";
+
+import api from "../../app/api";
 
 const initialState = {
     isLoading: false,
@@ -39,11 +40,11 @@ export const getSubCategoryLevel = (id) => async (dispatch) =>{
     dispatch(startLoading())
 
     try{
-        const response = await axios.get(`http://52.221.209.156:5001/api/categories/${id}/subcategories`)
+        const response = await api.get(`/categories/${id}/subcategories`)
         
         if(response?.data){
             dispatch(getSubCategory(response?.data))
-            console.log(response?.data)
+           
             return response
         }
 
