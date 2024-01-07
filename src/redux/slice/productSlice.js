@@ -45,9 +45,28 @@ const productSlice = createSlice({
         createItemProduct(state, actions) {
             state.isLoading = false;
             state.product = actions.payload
+        },
+        createImageItem(state, actions){
+            state.isLoading = false;
+            state.product = actions.payload
         }
     }
 })
+
+export const postCreateImageItem = (params) => async (dispatch) =>{
+    dispatch(startLoading())
+    try{
+        const response = await api.post(`images/upload`,params)
+        if (response) {
+            console.log('response = ', response)
+            return response
+        }
+    }catch(error){
+        console.log(error)
+    }finally{
+        dispatch(stopLoading())
+    }
+}
 
 export const createProductItem = (params) => async (dispatch) =>{
     dispatch(startLoading())
