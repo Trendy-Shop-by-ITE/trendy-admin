@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { createProductItem } from '../../redux/slice/productSlice';
+import { createProductItem, postCreateImageItem } from '../../redux/slice/productSlice';
 import { useDispatch } from 'react-redux';
 
 const AddProductItem = () => {
@@ -13,7 +13,9 @@ const AddProductItem = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const [isImageDialogOpen, setIsImageDialogOpen] = useState(false);
+  const fileImage = useRef(null)
+  const [selectFile, setSelectFile] = useState(null)
+
 
   const [productItems, setProductItems] = useState([
     {
@@ -32,7 +34,6 @@ const AddProductItem = () => {
       imageFile: '',
       color: '',
       colorCode: '',
-      image_onColor: '',
       isCurrent: true, // Added to track the current item
     },
   ]);
@@ -42,6 +43,14 @@ const AddProductItem = () => {
     updatedImageItems[index][field] = value;
     setImageItems(updatedImageItems)
   }
+  const handleInputChangeImgaeFile = (field, e, index) => {
+    const file = e.target.files[0];
+    console.log(file);
+    const updatedImageItems = [...imageItems];
+    updatedImageItems[index][field] = file;
+    setImageItems(updatedImageItems);
+  }
+
 
   const handleInputChange = (field, value, index) => {
     // Update the value of the specified field for the product item at the given index
@@ -75,11 +84,10 @@ const AddProductItem = () => {
   const handleAddImageItem = () => {
     console.log(imageItems)
     const currentImageItem = imageItems[imageItems.length - 1];
-    if (!currentImageItem.imageFile || !currentImageItem.color || !currentImageItem.colorCode || !currentImageItem.image_onColor) {
+    if (!currentImageItem.imageFile || !currentImageItem.color || !currentImageItem.colorCode) {
       alert('Please fill in all fields for the image item.');
       return;
     }
-
 
     setImageItems((prevItems) => [
       ...prevItems,
@@ -88,11 +96,23 @@ const AddProductItem = () => {
         imageFile: '',
         color: '',
         colorCode: '',
-        image_onColor: '',
         isCurrent: true, // Added to track the current item
       }
     ])
   }
+
+  const handleClearImage = () => {
+    // Clear the form fields for the last product item
+    const updatedImageItems = [...imageItems];
+    updatedImageItems[updatedImageItems.length - 1] = {
+      productId,
+      imageFile: '',
+      color: '',
+      colorCode: '',
+      isCurrent: true,
+    };
+    setImageItems(updatedImageItems);
+  };
 
   const handleClear = () => {
     // Clear the form fields for the last product item
@@ -118,6 +138,15 @@ const AddProductItem = () => {
       alert('Cannot delete the current item. Use "Clear" to remove its content.');
     }
   };
+  const handleDeleteImgItem = (index) => {
+    // Remove the specified product item from the state
+    if (index !== imageItems.length - 1) {
+      const updatedImageItem = imageItems.filter((item, i) => i !== index);
+      setImageItems(updatedImageItem);
+    } else {
+      alert('Cannot delete the current item. Use "Clear" to remove its content.');
+    }
+  };
 
 
   const handleNext = async () => {
@@ -133,7 +162,7 @@ const AddProductItem = () => {
 
     try {
       // Use Promise.all to wait for all dispatch calls to complete
-      const responses = await Promise.all(
+      const productResponses = await Promise.all(
         productItems.map(async (item) => {
           const params = {
             product_id: item.productId,
@@ -145,31 +174,60 @@ const AddProductItem = () => {
 
           try {
             const response = await dispatch(createProductItem(params));
+
             if (response?.status === 201) {
-              // Extract product ID and name from the response
               const { productId } = response.data;
-              // Navigate to the next page and pass data as state
-              navigate("/image", { state: { productId, productName: productName } });
             } else {
-              // Handle the case where the creation was not successful
               console.log("Product creation failed");
             }
-            return response; // Return the response from the current iteration
+
+            return response;
           } catch (error) {
             console.log(error);
-            return error; // Return the error from the current iteration
+            return error;
+          }
+        })
+      );
+
+      const imageResponses = await Promise.all(
+        imageItems.map(async (imageItem) => {
+          const imageParams = {
+            product_id: imageItem.productId,
+            image: imageItem.imageFile,
+            color: imageItem.color,
+            color_code: imageItem.colorCode,
+            image_onColor: imageItem.colorCode
+            
+          };
+
+          try {
+            const imageResponse = await dispatch(postCreateImageItem(imageParams));
+
+            if (imageResponse?.status === 201) {
+              // Handle image item creation success
+              console.log('Image item creation successful');
+            } else {
+              console.log("Image item creation failed");
+            }
+
+            return imageResponse;
+          } catch (error) {
+            console.log(error);
+            return error;
           }
         })
       );
 
       // Check responses if needed
 
-      // Implement additional logic, such as posting all product items to the API
+      // Implement additional logic, such as posting all product and image items to the API
 
       // For now, let's log a message indicating the "Next" button was clicked
       console.log('Next button clicked');
+       // Alert success after both API calls have completed
+       navigate(-1)
     } finally {
-      setLoading(false); // Set loading to false after all iterations are completed
+      setLoading(false);
     }
   };
 
@@ -301,6 +359,9 @@ const AddProductItem = () => {
                   <input
                     id="file_input"
                     type="file"
+                    accept='.png, .jpg'
+                    ref={fileImage}
+                    onChange={(e) => handleInputChangeImgaeFile('imageFile', e, index)}
                     className="block w-full bg-gray-100 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-xs sm:text-sm sm:leading-6" />
                   {/* <input
                       type="number"
@@ -326,23 +387,23 @@ const AddProductItem = () => {
                     name={`color-code-${index}`}
                     className="block w-full bg-gray-100 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-xs sm:text-sm sm:leading-6"
                   />
-                  <input 
-                  type='color'
-                  onChange={(e) => handleInputChangeImgaeObj('colorCode', e.target.value, index)} />
+                  <input
+                    type='color'
+                    onChange={(e) => handleInputChangeImgaeObj('colorCode', e.target.value, index)} />
                 </div>
 
               </div>
 
               <div className="sm:grid sm:grid-cols-3 sm:items-start sm:gap-4 sm:py-6">
-                <label htmlFor={`color-name-${index}`} className="block text-sm font-medium leading-6 text-gray-900 sm:pt-1.5">
+                <label htmlFor={`color-${index}`} className="block text-sm font-medium leading-6 text-gray-900 sm:pt-1.5">
                   Color Name
                 </label>
                 <div className="mt-2 sm:col-span-2 sm:mt-0">
                   <textarea
-                    id={`color-name-${index}`}
-                    name={`color-name-${index}`}
+                    id={`color-${index}`}
+                    name={`color-${index}`}
                     value={itemImg.colorName}
-                    onChange={(e) => handleInputChangeImgaeObj('colorName', e.target.value, index)}
+                    onChange={(e) => handleInputChangeImgaeObj('color', e.target.value, index)}
                     className="block w-full bg-gray-100 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-md sm:text-sm sm:leading-6"
                   />
                 </div>
@@ -358,7 +419,7 @@ const AddProductItem = () => {
                     id={`color-code-${index}`}
                     name={`color-code-${index}`}
                     value={itemImg.colorCode}
-                    onChange={(e) => handleInputChangeImgaeObj('image_onColor', e.target.value, index)}
+                    // onChange={(e) => handleInputChangeImgaeObj('image_onColor', e.target.value, index)}
                     className="block w-full bg-gray-100 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-xs sm:text-sm sm:leading-6"
                   />
                 </div>
