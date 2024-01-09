@@ -24,7 +24,6 @@ const AddProductItem = () => {
       size: '',
       amount: '',
       colorCode: '',
-      colorName: '',
       isCurrent: true, // Added to track the current item
     },
   ]);
@@ -62,7 +61,7 @@ const AddProductItem = () => {
   const handleAddProductItem = () => {
     // Validate fields for the current product item
     const currentProductItem = productItems[productItems.length - 1];
-    if (!currentProductItem.size || !currentProductItem.amount || !currentProductItem.colorCode || !currentProductItem.colorName) {
+    if (!currentProductItem.size || !currentProductItem.amount) {
       alert('Please fill in all fields for the product item.');
       return;
     }
@@ -152,7 +151,7 @@ const AddProductItem = () => {
   const handleNext = async () => {
     // Validate fields for the current product item
     const currentProductItem = productItems[productItems.length - 1];
-    if (!currentProductItem.size || !currentProductItem.amount || !currentProductItem.colorCode || !currentProductItem.colorName) {
+    if (!currentProductItem.size || !currentProductItem.amount) {
       alert('Please fill in all fields for the product item.');
       setLoading(false);
       return;
@@ -167,7 +166,7 @@ const AddProductItem = () => {
           const params = {
             product_id: item.productId,
             size: item.size,
-            color: item.colorName,
+            color: item.colorCode,
             color_code: item.colorCode,
             amount: item.amount,
           };
@@ -191,17 +190,15 @@ const AddProductItem = () => {
 
       const imageResponses = await Promise.all(
         imageItems.map(async (imageItem) => {
-          const imageParams = {
-            product_id: imageItem.productId,
-            image: imageItem.imageFile,
-            color: imageItem.color,
-            color_code: imageItem.colorCode,
-            image_onColor: imageItem.colorCode
-            
-          };
+          const formData = new FormData();
+          formData.append('product_id', imageItem.productId);
+          formData.append('image', imageItem.imageFile);
+          formData.append('color', imageItem.color);
+          formData.append('color_code', imageItem.colorCode);
+          formData.append('image_onColor', imageItem.colorCode);
 
           try {
-            const imageResponse = await dispatch(postCreateImageItem(imageParams));
+            const imageResponse = await dispatch(postCreateImageItem(formData));
 
             if (imageResponse?.status === 201) {
               // Handle image item creation success
@@ -218,14 +215,15 @@ const AddProductItem = () => {
         })
       );
 
+
       // Check responses if needed
 
       // Implement additional logic, such as posting all product and image items to the API
 
       // For now, let's log a message indicating the "Next" button was clicked
       console.log('Next button clicked');
-       // Alert success after both API calls have completed
-       navigate(-1)
+      // Alert success after both API calls have completed
+      navigate(-1)
     } finally {
       setLoading(false);
     }
@@ -297,7 +295,7 @@ const AddProductItem = () => {
                 </label>
                 <div className="mt-2 sm:col-span-2 sm:mt-0">
                   <input
-                    type="text"
+                    type="color"
                     id={`color-code-${index}`}
                     name={`color-code-${index}`}
                     value={item.colorCode}
@@ -315,8 +313,9 @@ const AddProductItem = () => {
                   <textarea
                     id={`color-name-${index}`}
                     name={`color-name-${index}`}
-                    value={item.colorName}
-                    onChange={(e) => handleInputChange('colorName', e.target.value, index)}
+                    readOnly = {true}
+                    value={item.colorCode}
+                    
                     className="block w-full bg-gray-100 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-md sm:text-sm sm:leading-6"
                   />
                 </div>
@@ -382,14 +381,12 @@ const AddProductItem = () => {
                   <input
                     readOnly={true}
                     value={itemImg.colorCode}
-                    type="text"
+                    type="color"
+                    onChange={(e) => handleInputChangeImgaeObj('colorCode', e.target.value, index)} 
                     id={`color-code-${index}`}
                     name={`color-code-${index}`}
                     className="block w-full bg-gray-100 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-xs sm:text-sm sm:leading-6"
                   />
-                  <input
-                    type='color'
-                    onChange={(e) => handleInputChangeImgaeObj('colorCode', e.target.value, index)} />
                 </div>
 
               </div>
