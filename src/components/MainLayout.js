@@ -98,21 +98,21 @@ const MainLayout = ({children}) => {
                             icon: <AiOutlineShoppingCart style={{ fontSize: '20px' }} />,
                             label: 'Catalog',
                             children: [
-                                {
-                                    key: 'product',
-                                    icon: <AiOutlineShoppingCart style={{ fontSize: '20px' }} />,
-                                    label: 'Add Product',
-                                },
+                                // {
+                                //     key: 'product',
+                                //     icon: <AiOutlineShoppingCart style={{ fontSize: '20px' }} />,
+                                //     label: 'Add Product',
+                                // },
                                 {
                                     key: 'product-list',
                                     icon: <AiOutlineShoppingCart style={{ fontSize: '20px' }} />,
                                     label: 'Product List',
                                 },
-                                {
-                                    key: 'product-item',
-                                    icon: <LiaSitemapSolid style={{ fontSize: '20px' }} />,
-                                    label: 'Add Product Item',
-                                },
+                                // {
+                                //     key: 'product-item',
+                                //     icon: <LiaSitemapSolid style={{ fontSize: '20px' }} />,
+                                //     label: 'Add Product Item',
+                                // },
                                 {
                                     key: 'product-item-list',
                                     icon: <LiaSitemapSolid style={{ fontSize: '20px' }} />,

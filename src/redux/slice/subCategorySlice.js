@@ -36,11 +36,11 @@ const subCategorySlice = createSlice({
     }
 })
 
-export const getSubCategoryLevel = (id) => async (dispatch) =>{
+export const getSubCategoryLevel = (id, params) => async (dispatch) =>{
     dispatch(startLoading())
 
     try{
-        const response = await api.get(`/categories/${id}/subcategories`)
+        const response = await api.get(`/categories/${id}/subcategories`,{params})
         
         if(response?.data){
             dispatch(getSubCategory(response?.data))
@@ -53,7 +53,27 @@ export const getSubCategoryLevel = (id) => async (dispatch) =>{
         return error
     }
 
-    dispatch(stopLoading)
+    dispatch(stopLoading())
+}
+
+export const deleteCategory = (id) => async (dispatch) =>{
+    dispatch(startLoading())
+    try {
+        const response = await api.delete(`/category/delete/${id}`)
+
+        if (response) {
+            console.log('response = ', response)
+
+            return response
+        }
+    } catch (error) {
+        console.log("error = ", error.response)
+        if (error?.response) {
+
+            return error.response
+        }
+    }
+    dispatch(stopLoading())
 }
 
 export const {

@@ -10,6 +10,7 @@ const initialState = {
         //post data 
     },
     data: [],
+    createCategoryData: {}
 }
 
 const categorySlice = createSlice({
@@ -33,18 +34,41 @@ const categorySlice = createSlice({
         getCategory(state, action) {
             state.isLoading = false;
             state.data = action.payload;
+        },
+        createCategory(state, action) {
+            state.isLoading = false;
+            state.createCategoryData = action.payload
         }
-        
+
     }
 })
+
+
+export const createSubCategory = (params) => async (dispatch) => {
+    dispatch(startLoading())
+    try {
+        const response = await api.post(`categories/subcategories`, params)
+        if (response) {
+            dispatch(createCategory(response))
+            console.log('response = ', response)
+            return response
+        }
+    } catch (error) {
+        console.log(error)
+    } finally {
+        dispatch(stopLoading())
+    }
+}
+
+
 export const fetchCategories = async () => {
     try {
-      const response = await api.get("/categories");
-      return response.data;
+        const response = await api.get("/categories");
+        return response.data;
     } catch (error) {
-      throw error;
+        throw error;
     }
-  };
+};
 
 export const getTopLevelCategory = () => async (dispatch) => {
     dispatch(startLoading());
@@ -65,12 +89,27 @@ export const getTopLevelCategory = () => async (dispatch) => {
 
     dispatch(stopLoading());
 };
+export const postImageCategory = (params) => async (dispatch) => {
+    dispatch(startLoading())
+    try {
+        const response = await api.post(`images/upload/category`, params)
+        if (response) {
+            console.log('response = ', response)
+            return response
+        }
+    } catch (error) {
+        console.log(error)
+    } finally {
+        dispatch(stopLoading())
+    }
+}
 export const {
     startLoading,
     stopLoading,
     hasError,
     setFilterSuccess,
-    getCategory
+    getCategory,
+    createCategory
 
 } = categorySlice.actions
 
