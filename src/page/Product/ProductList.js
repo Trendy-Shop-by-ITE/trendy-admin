@@ -295,8 +295,8 @@ const ProductList = () => {
                                             <tr key={index}>
                                                 <td className="whitespace-nowrap py-2 pl-4 pr-3 text-sm sm:pl-0">
                                                     <div className="flex items-center">
-                                                        <div className="h-20 w-20 flex-shrink-0">
-                                                            <img className="h-20 w-20 " src={item.image[0]?.image_url} alt="image" />
+                                                        <div className="h-40 w-30 flex-shrink-0">
+                                                            <img className="h-40 w-30 " src={item.image[0]?.image_url} alt="image" />
                                                         </div>
                                                         <div className="ml-4">
                                                             <div className="font-medium text-gray-900">{item.product_name}</div>
