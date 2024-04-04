@@ -81,3 +81,9 @@ main::-webkit-scrollbar{
 .ant-menu-title-content{
   font-size: 16px;
 }
+
+.ant-menu-dark .ant-menu-item-selected {
+  background-color: #ff00f700; /* Set your desired background color */
+
+}
+

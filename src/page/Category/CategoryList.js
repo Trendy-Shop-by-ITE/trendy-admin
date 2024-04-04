@@ -9,7 +9,7 @@ const CategoryList = () => {
   const [isLoading, setIsLoading] = useState(false);
   const data = useSelector((state) => state?.root?.category?.data);
   const dispatch = useDispatch();
-  
+
   const [selectedCategoryId, setSelectedCategoryId] = useState(null);
 
   const initData = async () => {
@@ -38,10 +38,10 @@ const CategoryList = () => {
 
 
   return (
-    <div className='bg bg- bg-white p-4 rounded-lg overflow-hidden'>
+    <div className='bg-white p-4 rounded-lg'>
 
-    
-        <h2 className='mb-4 text-3xl font-bold'>Category</h2>
+
+      <h2 className='mb-4 text-3xl font-bold'>Category</h2>
       <Tabs>
         <TabList>
           {/* Render dynamic tabs for top-level categories */}
@@ -51,13 +51,15 @@ const CategoryList = () => {
             </Tab>
           ))}
         </TabList>
+        <div>
+          {/* Render CategoryContent with the selected top-level category ID */}
+          {data?.map((category) => (
+            <TabPanel key={category.id}>
+              <CategoryContent id={category.id} key={category.id} />
+            </TabPanel>
+          ))}
+        </div>
 
-        {/* Render CategoryContent with the selected top-level category ID */}
-        {data?.map((category) => (
-          <TabPanel key={category.id}>
-            <CategoryContent id={category.id} key={category.id} />
-          </TabPanel>
-        ))}
       </Tabs>
     </div>
   );

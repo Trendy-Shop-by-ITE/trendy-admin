@@ -47,8 +47,8 @@ function App() {
               <Route path='category-list' element={<CategoryList />} />
               <Route path='order' element={<Order />} />
               <Route path='category' element={<AddCategory />} />
-              <Route path='product' element={<AddProduct />} />
-              <Route path='product-item' element={<AddProductItem />} />
+              {/* <Route path='product' element={<AddProduct />} /> */}
+              {/* <Route path='product-item' element={<AddProductItem />} /> */}
               <Route path='image' element={<AddImage />} />
             {/* <Route path='/admin' element={<MainLayout />}>
               

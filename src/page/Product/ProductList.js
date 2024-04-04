@@ -1,19 +1,21 @@
 import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { deleteProductById, getProductLevel } from '../../redux/slice/productSlice'
-
+import { Space, Table, Pagination, Select, Dropdown, Menu, message } from 'antd';
 import { FiEdit } from "react-icons/fi";
 import { MdOutlineDeleteForever } from "react-icons/md"
 import ConfirmDelete from '../../utils/ConfirmDelete';
 import { notification } from 'antd';
-
+import { MdOutlineFilterAlt } from "react-icons/md";
 import { CloseCircleOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import LoadingAnimation from '../../utils/LoadingAnimation';
-
+import { Input } from 'antd';
+import AddProduct from './AddProduct';
+import AddProductItem from './AddProductItem';
+const { Search } = Input;
 
 
 const ProductList = () => {
-
     const openNotification = (description, isSuccess) => {
         notification.open({
             message: 'Product Deleted',
@@ -21,20 +23,134 @@ const ProductList = () => {
             icon: isSuccess ? <CheckCircleOutlined className=' text-green-500' /> : <CloseCircleOutlined className=' text-red-500' />
         });
     };
+    const openNotificationCreate = (message, description, isSuccess) => {
+        notification.open({
+            message: message,
+            description: description,
+            icon: isSuccess ? <CheckCircleOutlined className=' text-green-500' /> : <CloseCircleOutlined className=' text-red-500' />
+        });
+    };
 
     const [isVisible, setIsVisible] = useState(null);
     const [selectedProductId, setSelectedProductId] = useState(null);
-
+    const [searchQuery, setSearchQuery] = useState('');
     const [deleteData, setDeleteData] = useState()
     const [isLoading, setIsLoading] = useState(false)
-    const data = useSelector((state) => state?.root.product?.data)
+    const data = useSelector((state) => state?.root?.product?.productData?.data)
+    const [filterType, setFilterType] = useState("1")
+    const [addVisit, setAddVisit] = useState(false)
+    const [addItemVisit, setAddItemVisit] = useState(false)
+    const [prodId, setProdId] = useState()
+    const [prodName, setProdName] = useState('')
+    const handleSearch = (value) => {
+        // Update the searchQuery state when the user enters a search query
+        setSearchQuery(value);
+        console.log(value);
+        // Call the fetchProductItems function with the search query
+        // initData({ query: value });
+    };
+
     const dataDelteRes = useSelector((state) => state?.root.product?.errorData)
     const dispatch = useDispatch();
-    const initData = async () => {
+
+    const handleOkDailog = async (dataSend) => {
+        setAddVisit(false)
+        console.log("data send = ",dataSend)
+        const itemVisit = dataSend.addItemVisitble
+        setAddItemVisit(itemVisit)
+        setProdId(dataSend.productId)
+        setProdName(dataSend.productName)
+    }
+    const handleItemOkDailog = async(meesages) => {
+        setAddItemVisit(false)
+        openNotificationCreate("Product Created", meesages.message, meesages.success)
+        if (filterType === '1') {
+            initData()
+        }
+        if (filterType === '2') {
+            initData({ sortBy: 'amount', sortOrder: 'asc' })
+        }
+        if (filterType === '3') {
+            initData({ sortBy: 'amount', sortOrder: 'desc' })
+        }
+        if (filterType === '4') {
+            initData({ sortBy: 'product_price', sortOrder: 'asc' })
+        }
+        if (filterType === '5') {
+            initData({ sortBy: 'product_price', sortOrder: 'desc' })
+        }
+        if (filterType === '6') {
+            initData({ sortBy: 'product_discount', sortOrder: 'asc' })
+        }
+        if (filterType === '7') {
+            initData({ sortBy: 'product_discount', sortOrder: 'desc' })
+        }
+
+    }
+
+    const handleFilterChange = ({ key }) => {
+        // Handle the filter type change here
+        console.log('Selected Filter Type:', key);
+        // Call the fetchProductItems function with the selected filter type
+        setFilterType(key)
+        if (key === '1') {
+            initData()
+        }
+        if (key === '2') {
+            initData({ sortBy: 'amount', sortOrder: 'asc' })
+        }
+        if (key === '3') {
+            initData({ sortBy: 'amount', sortOrder: 'desc' })
+        }
+        if (key === '4') {
+            initData({ sortBy: 'product_price', sortOrder: 'asc' })
+        }
+        if (key === '5') {
+            initData({ sortBy: 'product_price', sortOrder: 'desc' })
+        }
+        if (key === '6') {
+            initData({ sortBy: 'product_discount', sortOrder: 'asc' })
+        }
+        if (key === '7') {
+            initData({ sortBy: 'product_discount', sortOrder: 'desc' })
+        }
+
+    };
+
+    const filterMenu = (
+        <Menu onClick={handleFilterChange}>
+            <Menu.Item key="1" icon={<MdOutlineFilterAlt />}>
+                Simple List
+            </Menu.Item>
+            <Menu.Item key="2" icon={<MdOutlineFilterAlt />}>
+                By low amount
+            </Menu.Item>
+            <Menu.Item key="3" icon={<MdOutlineFilterAlt />}>
+                By highest amount
+            </Menu.Item>
+            <Menu.Item key="4" icon={<MdOutlineFilterAlt />}>
+                By low price
+            </Menu.Item>
+            <Menu.Item key="5" icon={<MdOutlineFilterAlt />}>
+                By highest price
+            </Menu.Item>
+            <Menu.Item key="6" icon={<MdOutlineFilterAlt />}>
+                By low discount
+            </Menu.Item>
+            <Menu.Item key="7" icon={<MdOutlineFilterAlt />}>
+                By highest discount
+            </Menu.Item>
+        </Menu>
+    );
+
+    const initData = async (params) => {
         setIsLoading(true)
         let response = {}
         try {
-            response = await dispatch(getProductLevel())
+            // Include the search query in the API call
+            response = await dispatch(getProductLevel({ ...params, query: searchQuery }));
+            console.log(response)
+
         } catch (e) {
             console.log(e)
             response = e
@@ -43,8 +159,9 @@ const ProductList = () => {
         return response
     }
     useEffect(() => {
+        // initData({sortBy:'product_price', sortOrder: 'desc'})
         initData()
-    }, [])
+    }, [searchQuery])
 
     // if(dataDelteRes){
     //     console.log('data error = ',dataDelteRes)
@@ -121,13 +238,22 @@ const ProductList = () => {
             )}
             <h2 className='mb-4 text-3xl font-bold'>Product List</h2>
             <div className='bg bg- bg-white p-1 rounded-lg'>
-                <div className="px-4 sm:px-6 lg:px-8 h-screen">
-                    <div className="sm:flex sm:items-center">
-                        <div className="sm:flex-auto">
+                <div className="px-4 sm:px-6 lg:px-8 h-full">
+                    <div className="sm:flex items-center sm:items-center">
+                        <div className="sm:flex-auto mt-4">
+                            <Search
+                                placeholder="Search products"
+                                onSearch={handleSearch}
+                                enterButton = 'Search'
+                                allowClear
+                                size='large'
+                                style={{ width: 400 }}
+                            />
                         </div>
                         <div className="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
                             <button
                                 type="button"
+                                onClick={()=> setAddVisit(true)}
                                 className="block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                             >
                                 Add Product
@@ -155,8 +281,12 @@ const ProductList = () => {
                                             <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
                                                 Discount (%)
                                             </th>
-                                            <th scope="col" className="px-3 py-3.5 text-center text-sm font-semibold text-gray-900">
-                                                Action
+                                            <th scope="col" className="px-5 py-3.5 text-center text-2xl font-semibold text-gray-900">
+                                                <Dropdown className=' text-center' overlay={filterMenu} trigger={['click']}>
+                                                    <a className="ant-dropdown-link" onClick={(e) => e.preventDefault()}>
+                                                        <MdOutlineFilterAlt />
+                                                    </a>
+                                                </Dropdown>
                                             </th>
                                         </tr>
                                     </thead>
@@ -165,8 +295,8 @@ const ProductList = () => {
                                             <tr key={index}>
                                                 <td className="whitespace-nowrap py-2 pl-4 pr-3 text-sm sm:pl-0">
                                                     <div className="flex items-center">
-                                                        <div className="h-20 w-20 flex-shrink-0">
-                                                            <img className="h-20 w-20 " src={item.image[0]?.image_url} alt="image" />
+                                                        <div className="h-40 w-30 flex-shrink-0">
+                                                            <img className="h-40 w-30 " src={item.image[0]?.image_url} alt="image" />
                                                         </div>
                                                         <div className="ml-4">
                                                             <div className="font-medium text-gray-900">{item.product_name}</div>
@@ -225,6 +355,22 @@ const ProductList = () => {
                     isVisible={isVisible}
                     onOk={confirmDelete}
                     onCancel={() => setIsVisible(false)}
+                />
+            )}
+
+            {addVisit && (
+                <AddProduct 
+                isVisible={addVisit}
+                onOk={handleOkDailog}
+                onCancel={() => setAddVisit(false)}
+                />
+            )}
+            {prodId && (
+                <AddProductItem
+                isVisible={addItemVisit}
+                onOk={handleItemOkDailog}
+                id={prodId}
+                name={prodName}
                 />
             )}
         </di>

@@ -8,7 +8,10 @@ const initialState = {
     },
     data: [],
     errorData: [],
-    product: []
+    product: [],
+    productItem: [],
+    productItemData: {},
+    productData:[],
 }
 
 
@@ -32,12 +35,17 @@ const productSlice = createSlice({
         },
         getProduct(state, actions) {
             state.isLoading = false;
-            state.data = actions.payload
+            state.productData = actions.payload
         },
         deleteProductBID(state, actions) {
             state.isLoading = false;
             state.errorData = actions.payload
         },
+        deleteProductItemBID(state, actions) {
+            state.isLoading = false;
+            state.errorData = actions.payload
+        }
+        ,
         createProduct(state, actions) {
             state.isLoading = false;
             state.product = actions.payload
@@ -49,14 +57,78 @@ const productSlice = createSlice({
         createImageItem(state, actions){
             state.isLoading = false;
             state.product = actions.payload
+        },
+        getProductItem(state, actions) {
+            state.isLoading = false;
+            state.productItem = actions.payload
+        },
+        getProductItemById(state, actions) {
+            state.isLoading = false;
+            state.productItemData = actions.payload
+        },
+        updateProductItem(state, actions) {
+            state.isLoading = false;
+            state.product = actions.payload
         }
+        
     }
 })
+
+export const getProductItemByIddd = (id) => async (dispatch) =>{
+    dispatch(startLoading())
+    try{
+        const response = await api.get(`product-items/${id}`)
+        console.log('response byy = ', response)
+    
+        if (response) {
+            console.log('response = ', response)
+            dispatch(getProductItemById(response))
+            return response
+        }
+    }catch(error){
+        console.log(error)
+    }finally{
+        dispatch(stopLoading())
+    }
+}
+
+export const getAllProductItem = (params) => async (dispatch) =>{
+    dispatch(startLoading())
+    try{
+        // const response = await api.get(`product-items`, {params})
+        const response = await api.get(`/allProductItems`, {params})
+
+        if (response) {
+            console.log('response = ', response)
+            dispatch(getProductItem(response))
+            return response
+        }
+    }catch(error){
+        console.log(error)
+    }finally{
+        dispatch(stopLoading())
+    }
+}
 
 export const postCreateImageItem = (params) => async (dispatch) =>{
     dispatch(startLoading())
     try{
         const response = await api.post(`images/upload`,params)
+        if (response) {
+            console.log('response = ', response)
+            return response
+        }
+    }catch(error){
+        console.log(error)
+    }finally{
+        dispatch(stopLoading())
+    }
+}
+
+export const updateProductItemById = (id, params) => async (dispatch) =>{
+    dispatch(startLoading())
+    try{
+        const response = await api.put(`product-variant/${id}`,params)
         if (response) {
             console.log('response = ', response)
             return response
@@ -109,9 +181,9 @@ export const createProductMain = (params) => async (dispatch) => {
 }
 
 
-export const fetchProduct = async () => {
+export const fetchProduct = (params) => async () => {
     try {
-        const response = await api.get("/productsV2");
+        const response = await api.get(`/productsV2`, {params});
         return response.data;
     } catch (error) {
         throw error;
@@ -138,22 +210,41 @@ export const deleteProductById = (id) => async (dispatch) => {
     dispatch(stopLoading())
 }
 
-export const getProductLevel = () => async (dispatch) => {
+export const deleteProductItemById = (id) => async (dispatch) => {
     dispatch(startLoading())
     try {
+        const response = await api.delete(`/product-variant/${id}`)
 
-        const response = await fetchProduct()
         if (response) {
+            console.log('response = ', response)
+
+            return response
+        }
+    } catch (error) {
+        console.log("error = ", error.response)
+        if (error?.response) {
+
+            return error.response
+        }
+    }
+    dispatch(stopLoading())
+}
+
+export const getProductLevel = (params) => async (dispatch) =>{
+    dispatch(startLoading())
+    try{
+        const response = await api.get(`/productsV2`, {params})
+
+        if (response) {
+            console.log('response = ', response)
             dispatch(getProduct(response))
             return response
         }
-
-
-    } catch (error) {
+    }catch(error){
         console.log(error)
-        return error
+    }finally{
+        dispatch(stopLoading())
     }
-    dispatch(stopLoading())
 }
 
 export const {
@@ -162,7 +253,10 @@ export const {
     hasError,
     setFilterSuccess,
     getProduct,
-    deleteProductBID
+    deleteProductBID,
+    deleteProductItemBID,
+    getProductItem,
+    getProductItemById
 } = productSlice.actions
 
 export default productSlice.reducer
