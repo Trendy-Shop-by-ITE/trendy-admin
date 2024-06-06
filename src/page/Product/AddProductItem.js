@@ -250,7 +250,7 @@ const AddProductItem = ({ isVisible, onOk, onCancel, id, name }) => {
   return (
     <Modal
       visible={isVisible}
-      title="Update Product Item"
+      title=" "
       onOk={handleOk}
       // onCancel={handleCancel}
       width={'60%'}
