@@ -3,7 +3,7 @@ import axios from "axios";
 import store from "../redux/store";
 
 const api = axios.create({
-  baseURL: "http://localhost:5001/api"
+  baseURL: "https://trendyserver.sovanrothnath.site/api"
 });
 
 api.interceptors.request.use(
